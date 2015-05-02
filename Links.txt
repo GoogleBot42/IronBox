@@ -1,0 +1,4 @@
+Some Links that helped in making this:
+http://lua-users.org/lists/lua-l/2011-06/msg00502.html
+http://lua-users.org/lists/lua-l/2011-06/msg00513.html
+http://lua-users.org/lists/lua-l/2011-02/msg01595.html
