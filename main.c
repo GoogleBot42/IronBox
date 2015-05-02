@@ -56,6 +56,6 @@ static const struct luaL_reg CoYield [] = {
 
 int luaopen_libCoYield (lua_State *L)
 {
-	luaL_register(L, NULL, CoYield);
+	luaL_register(L, "\0", CoYield);
 	return 1;
 }
