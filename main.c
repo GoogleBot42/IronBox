@@ -20,7 +20,7 @@ int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-int CoYield_EnableYield(lua_State *L)
+int CoYield_ReenableYield(lua_State *L)
 {
 	enabled = 1;
 	return 0;
@@ -28,12 +28,12 @@ int CoYield_EnableYield(lua_State *L)
 
 static const struct luaL_reg CoYield [] = {
       {"MakeCoYield", CoYield_MakeCoYield},
-      {"EnableYield", CoYield_EnableYield},
+      {"ReenableYield", CoYield_ReenableYield},
       {NULL, NULL}
 };
 
 int luaopen_libCoYield (lua_State *L)
 {
-	luaL_register(L, "CoYield", CoYield);
+	luaL_register(L, NULL, CoYield);
 	return 1;
 }
