@@ -1,20 +1,32 @@
-local MakeCoYield = require "libCoYield"
+local CoYield = require "libCoYield"
 
-local env = {print = print}
+local env = {print = print, j = 0}
 local function CoFunc()
-	print("I start...")
-	while true do
-		-- goes on forever
+	print("h") 
+	local i
+	for i=1,2000 do 
+		j=j+1 -- keeps luaJIT from optimizing this loop out of existence
 	end
-	print("But I don't finish!")
+	print("/H")
 end
-local function error_handler(msg) print("ERROR: "..msg) end
-local function safeCoFunc() xpcall(CoFunc,error_handler) end
+local function safeCall()
+	local success, msg = pcall(CoFunc)
+	if not success then
+		print("ERROR: "..msg)
+	end
+end
+if jit then jit.off(CoFunc,true) end
+if jit then jit.off(safeCall,true) end
 
 setfenv(CoFunc,env)
-local co = coroutine.create(safeCoFunc)
-MakeCoYield(co)
+local co = coroutine.create(safeCall)
+CoYield.MakeCoYield(co)
 
-coroutine.resume(co)
-
-print("It stops!")
+local stillRunning = true
+while stillRunning do
+	-- must reenable yielding before each resume because otherwise the C function 
+	-- does weird things and tries to yield outside this coroutine for some strange reason
+	CoYield.ReenableYield()
+	stillRunning = coroutine.resume(co)
+	print(stillRunning, env.j, coroutine.status(co))
+end
