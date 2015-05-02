@@ -9,6 +9,7 @@ This is because Lua debug hooks cannot stop C from executing.
 
 # Compiling
 On linux run:
+
 cmake .
 
 make
