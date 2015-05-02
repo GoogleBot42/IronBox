@@ -1,5 +1,5 @@
 # Perfect-LuaJIT-Sandbox
-This is for LuaJIT 2.x.  This doesn't work in Lua5.1 but should work with coco patch (untested): http://coco.luajit.org/
+This is for LuaJIT 2.x.  This doesn't work in Lua5.1 but it will work with this source lua5.1 patch: http://coco.luajit.org/
 
 Uses C debug hooks to keep unsafe lua code from running indefinitely!
 
