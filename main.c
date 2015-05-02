@@ -1,9 +1,17 @@
 #include "include/lua.h"
 #include "include/lauxlib.h"
 
+char enabled = 1;
+
 void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
-	lua_yield(L, 0);
+	printf("Yielding... ");
+	if (enabled)
+	{
+		printf("Yielded\n");
+		enabled = 0;
+		lua_yield(L, 0);
+	}
 }
 
 int CoYield_MakeCoYield(lua_State *L)
@@ -14,8 +22,20 @@ int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
+int CoYield_EnableYield(lua_State *L)
+{
+	enabled = 1;
+	return 0;
+}
+
+static const struct luaL_reg CoYield [] = {
+      {"MakeCoYield", CoYield_MakeCoYield},
+      {"EnableYield", CoYield_EnableYield},
+      {NULL, NULL}
+};
+
 int luaopen_libCoYield (lua_State *L)
 {
-	lua_pushcfunction(L, CoYield_MakeCoYield);
+	luaL_register(L, "CoYield", CoYield);
 	return 1;
 }
