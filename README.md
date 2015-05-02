@@ -8,6 +8,7 @@ NOTE: Be careful about what functions are passed to the environment of the unsaf
 This is because Lua debug hooks cannot stop C from executing.
 
 # Compiling
-On linux: run
+On linux run:
 cmake .
+
 make
