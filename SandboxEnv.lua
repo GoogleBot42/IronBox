@@ -1,6 +1,31 @@
+-- The MIT License (MIT)
+-- 
+-- Copyright (c) 2015 Matthew J. Runyan
+-- 
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to deal
+-- in the Software without restriction, including without limitation the rights
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
+-- 
+-- The above copyright notice and this permission notice shall be included in all
+-- copies or substantial portions of the Software.
+-- 
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-- SOFTWARE.
+
+-- environment variables that have been commented out are not safe
+-- but a few of them could potentially be made safe
+
 return function() return {
 	assert = assert,
-	-- dofile
+	-- dofile = dofile,
 	error = error,
 	ipairs = ipairs,
 	next = next,
@@ -21,23 +46,23 @@ return function() return {
 	running = coroutine.running,
 	status = coroutine.status,
 	wrap = coroutine.wrap,
-	-- yield = coroutine.yield, make sure that no c boundaries are surpassed or lua will terminate
+	-- yield = coroutine.yield, -- make sure that no c boundaries are surpassed or lua will terminate
 	},
-	-- module
-	-- require
+	-- module = module,
+	-- require = module,
 	-- package.*
 	string = {
 		byte = string.byte,
 		char = string.char,
-		-- dump = string.dump
+		-- dump = string.dump,
 
 		-- Determine if these are safe
-		--   string.find -- warning: a number of functions like this can still lock up the CPU [6]
-		--   string.format
-		--   string.gmatch
-		--   string.gsub
-		--   string.match
-		--   string.sub
+		-- find = string.find, -- warning: a number of functions like this can still lock up the CPU [6]
+		-- format = string.format,
+		-- gmatch = string.gmatch,
+		-- gsub = string.gsub,
+		-- match = string.match,
+		-- sub = string.sub,
 
 		len = string.len,
 		lower = string.lower,
