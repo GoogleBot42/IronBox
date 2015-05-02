@@ -11,8 +11,8 @@ end
 local function error_handler(msg) print("ERROR: "..msg) end
 local function safeCoFunc() xpcall(CoFunc,error_handler) end
 
-setfenv(safeCoFunc,env)
-local co = coroutine.create(CoFunc)
+setfenv(CoFunc,env)
+local co = coroutine.create(safeCoFunc)
 MakeCoYield(co)
 
 coroutine.resume(co)
