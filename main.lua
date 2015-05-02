@@ -7,9 +7,11 @@ local function CoFunc()
 		-- goes on forever
 	end
 	print("But I don't finish!")
-end if jit then jit.off(hang,true) end
+end
+local function error_handler(msg) print("ERROR: "..msg) end
+local function safeCoFunc() xpcall(CoFunc,error_handler) end
 
-setfenv(CoFunc,env)
+setfenv(safeCoFunc,env)
 local co = coroutine.create(CoFunc)
 MakeCoYield(co)
 
