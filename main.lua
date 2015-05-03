@@ -41,6 +41,7 @@ if jit then jit.off(safeCall,true) end
 
 setfenv(CoFunc,env)
 local co = coroutine.create(safeCall)
+
 CoYield.MakeCoYield(co)
 
 -- must reenable yielding before each resume because otherwise the C function 

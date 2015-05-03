@@ -22,6 +22,10 @@
 
 #include "include/lua.h"
 #include "include/lauxlib.h"
+#include <limits.h>
+
+#define DEFUALT_MAX_INSTRUCTIONS 100000
+#define MINIMUM_INSTRUCTIONS 1000
 
 char enabled = 1;
 
@@ -38,7 +42,20 @@ int CoYield_MakeCoYield(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TTHREAD);
 	lua_State *L1 = lua_tothread(L, 1);
-	lua_sethook(L1, CoYield_Yield, LUA_MASKCOUNT, 1000);
+	
+	int max_instructions = DEFUALT_MAX_INSTRUCTIONS;
+	if (lua_gettop(L) >= 2)
+	{
+		lua_Number tmp = luaL_checknumber(L, 2);
+		if (tmp > (lua_Number)INT_MAX)
+			max_instructions = INT_MAX;
+		else if (tmp < (lua_Number)MINIMUM_INSTRUCTIONS)
+			max_instructions = MINIMUM_INSTRUCTIONS;
+		else
+			max_instructions = (int)tmp;
+	}
+	
+	lua_sethook(L1, CoYield_Yield, LUA_MASKCOUNT, max_instructions);
 	return 0;
 }
 
