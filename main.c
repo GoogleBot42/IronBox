@@ -24,12 +24,12 @@
 #include "include/lauxlib.h"
 #include <limits.h>
 
-#define DEFUALT_MAX_INSTRUCTIONS 100000
+#define DEFUALT_INSTRUCTIONS 100000
 #define MINIMUM_INSTRUCTIONS 1000
 
 char enabled = 1;
 
-void CoYield_Yield(lua_State *L, lua_Debug *ar)
+static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
 	if (enabled)
 	{
@@ -38,41 +38,65 @@ void CoYield_Yield(lua_State *L, lua_Debug *ar)
 	}
 }
 
-int CoYield_MakeCoYield(lua_State *L)
+static int CoYield_MakeCoYield(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TTHREAD);
 	lua_State *L1 = lua_tothread(L, 1);
 	
-	int max_instructions = DEFUALT_MAX_INSTRUCTIONS;
+	int instructions = DEFUALT_INSTRUCTIONS;
 	if (lua_gettop(L) >= 2)
 	{
 		lua_Number tmp = luaL_checknumber(L, 2);
 		if (tmp > (lua_Number)INT_MAX)
-			max_instructions = INT_MAX;
+			instructions = INT_MAX;
 		else if (tmp < (lua_Number)MINIMUM_INSTRUCTIONS)
-			max_instructions = MINIMUM_INSTRUCTIONS;
+			instructions = MINIMUM_INSTRUCTIONS;
 		else
-			max_instructions = (int)tmp;
+			instructions = (int)tmp;
 	}
 	
-	lua_sethook(L1, CoYield_Yield, LUA_MASKCOUNT, max_instructions);
+	lua_sethook(L1, CoYield_Yield, LUA_MASKCOUNT, instructions);
 	return 0;
 }
 
-int CoYield_ReenableYield(lua_State *L)
+static int CoYield_ReenableYield(lua_State *L)
 {
 	enabled = 1;
 	return 0;
 }
 
+static void CoYeild_CallLuaYieldFunc(lua_State *L, lua_State* thread)
+{
+	lua_getglobal(L, "coroutine");
+	luaL_checktype(L, 2, LUA_TTABLE);
+	lua_getfield(L, 2, "resume");
+	lua_remove(L, 2);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+	lua_pushthread(thread);
+	lua_xmove(thread, L, 1);
+	lua_call(L, 1, LUA_MULTRET);
+}
+
+static int CoYeild_Resume(lua_State *L)
+{
+	int begin_stack_size = lua_gettop(L);
+	enabled = 1;
+	luaL_checktype(L, 1, LUA_TTHREAD);
+	CoYeild_CallLuaYieldFunc(L, lua_tothread(L, 1));
+	enabled = 0;
+	return lua_gettop(L) - begin_stack_size;
+}
+
 static const struct luaL_reg CoYield [] = {
-      {"MakeCoYield", CoYield_MakeCoYield},
-      {"ReenableYield", CoYield_ReenableYield},
+      {"makeCoYield", CoYield_MakeCoYield},
+      {"reenableYield", CoYield_ReenableYield},
+      {"resume", CoYeild_Resume},
       {NULL, NULL}
 };
 
 int luaopen_libCoYield (lua_State *L)
 {
+	//CoYeild_GetLuaCoYieldFunc(L);
 	luaL_register(L, "\0", CoYield);
 	return 1;
 }

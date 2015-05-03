@@ -42,11 +42,8 @@ if jit then jit.off(safeCall,true) end
 setfenv(CoFunc,env)
 local co = coroutine.create(safeCall)
 
-CoYield.MakeCoYield(co)
+CoYield.makeCoYield(co, 1000000) -- yield every 1 million instuctions
 
--- must reenable yielding before each resume because otherwise the C function 
--- does weird things and tries to yield outside this coroutine for some strange reason
-CoYield.ReenableYield()
-stillRunning = coroutine.resume(co)
+stillRunning = CoYield.resume(co)
 
 print("But it doesn't finish!")
