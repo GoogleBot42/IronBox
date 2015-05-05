@@ -13,3 +13,6 @@ On linux run:
 cmake .
 
 make
+
+### Allowing sandboxed code to be jit compiled
+see here: http://lua-users.org/lists/lua-l/2011-06/msg00513.html
