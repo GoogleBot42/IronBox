@@ -31,7 +31,6 @@ char enabled = 1;
 
 static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
-	printf("testing");
 	if (enabled)
 	{
 		enabled = 0;
