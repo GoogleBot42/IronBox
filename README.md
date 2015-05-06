@@ -8,9 +8,10 @@ NOTE: Be careful about what functions are passed to the environment of the unsaf
 This is because Lua debug hooks cannot stop C from executing.
 
 ### Compiling
-`
+```
 cmake .
 make
+```
 
 ### Allowing sandboxed code to be jit compiled
 see here: http://lua-users.org/lists/lua-l/2011-06/msg00513.html
@@ -36,3 +37,4 @@ box()
 -- stops again
 
 print("And they stop!")
+```
