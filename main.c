@@ -31,6 +31,7 @@ char enabled = 1;
 
 static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
+	printf("testing");
 	if (enabled)
 	{
 		enabled = 0;
@@ -44,7 +45,7 @@ static int CoYield_MakeCoYield(lua_State *L)
 	lua_State *L1 = lua_tothread(L, 1);
 	
 	int instructions = DEFUALT_INSTRUCTIONS;
-	if (lua_gettop(L) >= 2)
+	if (lua_gettop(L) >= 2 && !lua_isnil(L, 2))
 	{
 		lua_Number tmp = luaL_checknumber(L, 2);
 		if (tmp > (lua_Number)INT_MAX)
@@ -59,12 +60,7 @@ static int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-static int CoYield_ReenableYield(lua_State *L)
-{
-	enabled = 1;
-	return 0;
-}
-
+// TODO pass "..." to coroutine.resume
 static void CoYeild_CallLuaYieldFunc(lua_State *L, lua_State* thread)
 {
 	lua_getglobal(L, "coroutine");
@@ -89,14 +85,12 @@ static int CoYeild_Resume(lua_State *L)
 
 static const struct luaL_reg CoYield [] = {
       {"makeCoYield", CoYield_MakeCoYield},
-      {"reenableYield", CoYield_ReenableYield},
       {"resume", CoYeild_Resume},
       {NULL, NULL}
 };
 
 int luaopen_libCoYield (lua_State *L)
 {
-	//CoYeild_GetLuaCoYieldFunc(L);
 	luaL_register(L, "\0", CoYield);
 	return 1;
 }

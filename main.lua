@@ -20,30 +20,12 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local CoYield = require "libCoYield"
-local env = require("SandboxEnv")()
-env.j = 0
-local function CoFunc()
-	print("It starts...") 
-	while true do
-		-- never ends... or does it?
-	end
-	print("It finishes.")
-end
-local function safeCall()
-	local success, msg = pcall(CoFunc)
-	if not success then
-		print("ERROR: "..msg)
-	end
-end
-if jit then jit.off(CoFunc,true) end
-if jit then jit.off(safeCall,true) end
+local IronBox = require "IronBox"
 
-setfenv(CoFunc,env)
-local co = coroutine.create(safeCall)
+local box1 = IronBox.create("while true do end print(\"I don't finish :(\")")
+local box2 = IronBox.create("print('I cannot use the \"print\" function')", {}) -- create empty environment
+local box3 = IronBox.create("print('Ahhh now I can print! :)')") -- use the defualt environment (inludes print, pairs, etc.)
 
-CoYield.makeCoYield(co, 1000000) -- yield every 1 million instuctions
-
-stillRunning = CoYield.resume(co)
-
-print("But it doesn't finish!")
+box1() -- or box1:resume() they are the same
+box2()
+box3()
