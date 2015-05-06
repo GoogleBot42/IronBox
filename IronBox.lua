@@ -20,7 +20,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local CoYield = require "libCoYield"
+local CoYield = require "CoYield"
 local envGen = require "SandboxEnv"
 
 local IronBox = {}

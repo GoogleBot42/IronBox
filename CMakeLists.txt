@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.0)
-CMAKE_POLICY( SET CMP0046 OLD )
-
-project (CoYield)
-set(CMAKE_BUILD_TYPE Release)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(CoYield SHARED CoYield.c)
-ADD_DEPENDENCIES(CoYield lua)
+cmake_minimum_required (VERSION 3.0)
+project(CoYield C)
+ 
+find_package(Lua REQUIRED)
+ 
+add_library (${PROJECT_NAME} SHARED CoYield.c)
+target_link_libraries (${PROJECT_NAME} lua)
+set_target_properties (${PROJECT_NAME} PROPERTIES PREFIX "")
