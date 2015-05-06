@@ -20,45 +20,21 @@ see here: http://lua-users.org/lists/lua-l/2011-06/msg00513.html
 ### Usage 
 ```lua
 -- load library
-local CoYield = require "CoYield"
+local IronBox = require "IronBox"
 
--- global environment for this sandbox
-local env = { print = print }
+local box = IronBox.create(function() 
+	while true do 
+		-- never exits
+	end 
+	print("I don't finish :(")
+end)
 
--- untrusted function
-local function untrusted()
-  print("It starts...") 
-  while true do
-    -- never quits
-  end
-  print("It finishes.")
-end
+-- run the box
+box() -- box:resume() works too
+-- ding! The box has surpassed the executing limit.  Pausing the coroutine
 
--- safe wrapper function so errors do not make lua halt
-local function safeCall()
-	local success, msg = pcall(untrusted)
-	if not success then
-		print("ERROR: "..msg)
-	end
-end
+-- continue the box
+box()
+-- stops again
 
--- both functions must be have jit disabled (unless you compile with jit hook checking which is disabled by default)
-jit.off(untrusted, true)
-jit.off(safeCall, true)
-
--- set the environment for the untrusted code
-setfenv(untrusted, env)
-
--- turn this into a lua coroutine
-local co = coroutine.create(safeCall)
-
--- now pass this coroutine to the c library which attaches itself to the untrusted code and forces it to yield
--- parameter #1 is the coroutine
--- parameter #2 is the number of lua bytecodes to run before forces the code to yield (pause)
-CoYield.makeCoYield(co, 1000000) -- yield every 1 million instuctions
-
--- now the the c library does its magic and forces this function yield
--- this function acts the exact same as lua's coroutine.yield (even return values) but does a bit more to allow this library to work
-CoYield.resume(co)
-
-print("But it doesn't finish!")
+print("And they stop!")
