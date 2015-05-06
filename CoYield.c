@@ -89,7 +89,7 @@ static const struct luaL_reg CoYield [] = {
       {NULL, NULL}
 };
 
-int luaopen_libCoYield (lua_State *L)
+int luaopen_CoYield (lua_State *L)
 {
 	luaL_register(L, "\0", CoYield);
 	return 1;
