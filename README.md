@@ -13,3 +13,52 @@ On linux run:
 cmake .
 
 make
+
+### Allowing sandboxed code to be jit compiled
+see here: http://lua-users.org/lists/lua-l/2011-06/msg00513.html
+
+### Usage 
+```lua
+-- load library
+local CoYield = require "CoYield"
+
+-- global environment for this sandbox
+local env = { print = print }
+
+-- untrusted function
+local function untrusted()
+  print("It starts...") 
+  while true do
+    -- never quits
+  end
+  print("It finishes.")
+end
+
+-- safe wrapper function so errors do not make lua halt
+local function safeCall()
+	local success, msg = pcall(untrusted)
+	if not success then
+		print("ERROR: "..msg)
+	end
+end
+
+-- both functions must be have jit disabled (unless you compile with jit hook checking which is disabled by default)
+jit.off(untrusted, true)
+jit.off(safeCall, true)
+
+-- set the environment for the untrusted code
+setfenv(untrusted, env)
+
+-- turn this into a lua coroutine
+local co = coroutine.create(safeCall)
+
+-- now pass this coroutine to the c library which attaches itself to the untrusted code and forces it to yield
+-- parameter #1 is the coroutine
+-- parameter #2 is the number of lua bytecodes to run before forces the code to yield (pause)
+CoYield.makeCoYield(co, 1000000) -- yield every 1 million instuctions
+
+-- now the the c library does its magic and forces this function yield
+-- this function acts the exact same as lua's coroutine.yield (even return values) but does a bit more to allow this library to work
+CoYield.resume(co)
+
+print("But it doesn't finish!")
