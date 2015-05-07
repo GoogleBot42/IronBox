@@ -1,5 +1,5 @@
 ##  LuaJIT / Lua 5.1 Sandbox
-This is for LuaJIT 2.x.  This doesn't work in Lua5.1 but it will work with this source lua5.1 patch: http://coco.luajit.org/
+This is for LuaJIT 2.x.  This doesn't work in Lua5.1 but it will work with this source lua5.1 patch: http://coco.luajit.org/ or you can just use this with the patch already added: https://github.com/GoogleBot42/Lua-5.1.5-Coco
 
 Uses C debug hooks to allow pausing unsafe code in multiple coroutines.
 
