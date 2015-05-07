@@ -46,7 +46,7 @@ box()
 print("And it stops!")
 ```
 You can have as many IronBox's as you want.
-```
+```lua
 local box1 = IronBox.create("while true do end") -- initialize with a string
 local box2 = IronBox.create(function() while true do end end)
 
@@ -57,7 +57,7 @@ box2()
 -- they are started and resumed correctly without a c boundary errors that would pop up if pure lua was used
 ```
 You can initialize with a sandbox with specific environment.  A defualt safe environment is used if this arguemtn is empty.  Also a custom error function can be specified as well.
-```
+```lua
 local function error_hand(msg) -- msg holds the error
 	print("There was an error!")
 end
