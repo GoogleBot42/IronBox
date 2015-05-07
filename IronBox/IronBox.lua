@@ -42,7 +42,9 @@ local IronBox__meta = {
 	
 	__index = {
 		resume = function(box, ...)
-			CoYield.resume(box.co, ...)
+			if type(box.co) == "thread" then
+				CoYield.resume(box.co, ...)
+			end
 		end,
 	},
 }
@@ -58,14 +60,7 @@ function IronBox.create(untrusted, env, errorfunc)
 		errorfunc = default_errorfunc
 		if jit then jit.off(errorfunc,true) end
 	end
-	local msg
-	if type(untrusted) == 'string' then
-		untrusted, msg = loadstring(untrusted)
-		if untrusted == nil then
-			errorfunc(msg)
-			return msg
-		end
-	end
+	
 	-- extract options and create environment
 	local instructionsCount
 	if env then
@@ -79,6 +74,16 @@ function IronBox.create(untrusted, env, errorfunc)
 		env._count = nil
 	else
 		env = envGen()
+	end
+	
+	-- get function from string if necessary
+	if type(untrusted) == 'string' then
+		local msg
+		untrusted, msg = loadstring(untrusted)
+		if untrusted == nil then
+			errorfunc(msg)
+			return createIronBoxObject(nil, env)
+		end
 	end
 	
 	-- set environment
