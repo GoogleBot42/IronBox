@@ -25,14 +25,20 @@ local envGen = require "SandboxEnv"
 
 local IronBox = {}
 
+IronBox.Boxes = setmetatable({}, { __mode = "kv" })
+
 local function table_combine(t1, t2)
 	for i, v in pairs(t2) do
 		t1[i] = v
 	end
 end
 
-local function default_errorfunc(msg)
-	print("Error in IronBox sandbox: " .. msg)
+local function default_errorfunc(msg, box)
+	if box then
+		print("Error in IronBox [" .. tostring(box.id) .. "]: " .. msg)
+	else
+		print("Error could not create new box: " .. msg)
+	end
 end
 
 local IronBox__meta = {
@@ -43,14 +49,21 @@ local IronBox__meta = {
 	__index = {
 		resume = function(box, ...)
 			if type(box.co) == "thread" then
-				CoYield.resume(box.co, ...)
+				-- pass box for error handler
+				CoYield.resume(box.co, box, ...)
 			end
 		end,
 	},
 }
 
 local function createIronBoxObject(co, env)
-	return setmetatable({ co = co, env = env }, IronBox__meta)
+	if co then
+		local box = { co = co, env = env, id = #IronBox.Boxes }
+		table.insert(IronBox.Boxes, box)
+		return setmetatable(box, IronBox__meta)
+	else
+		return setmetatable({ co = co, env = env }, IronBox__meta)
+	end
 end
 
 function IronBox.create(untrusted, env, errorfunc)
@@ -90,10 +103,10 @@ function IronBox.create(untrusted, env, errorfunc)
 	setfenv(untrusted,env)
 	
 	-- create safe wrapper function
-	local safefunc = function(...)
+	local safefunc = function(box, ...)
 		local ok, result = pcall(untrusted, ...)
 		if not ok then
-			errorfunc(result)
+			errorfunc(result, box)
 		end
 		return result
 	end
