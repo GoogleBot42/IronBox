@@ -58,7 +58,7 @@ box2()
 ```
 You can initialize with a sandbox with specific environment.  A defualt safe environment is used if this arguemtn is empty.  Also a custom error function can be specified as well.
 ```lua
-local function error_hand(msg) -- msg holds the error
+local function error_hand(msg, box) -- msg holds the error box is the ironbox that had the error
 	print("There was an error!")
 end
 

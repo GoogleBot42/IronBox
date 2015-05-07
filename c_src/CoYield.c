@@ -59,27 +59,39 @@ static int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-// TODO pass "..." to coroutine.resume
-static void CoYeild_CallLuaYieldFunc(lua_State *L, lua_State* thread)
+static void CoYeild_CallLuaYieldFunc(lua_State *L) //, lua_State* thread)
 {
+	luaL_checktype(L, 1, LUA_TTHREAD);
+	// thread, ...
+	
 	lua_getglobal(L, "coroutine");
-	luaL_checktype(L, 2, LUA_TTABLE);
+	// thread, ..., coroutine_t
+	
+	lua_insert(L, 2);
+	// thread, coroutine_t, ...
+	
+	if (!lua_istable(L, 2))
+		luaL_error(L, "Global coroutine is not a table");
 	lua_getfield(L, 2, "resume");
+	if (!lua_isfunction(L, -1))
+		luaL_error(L, "coroutine.resume is not a function");
+	// thread, coroutine_t, ..., function
+	
 	lua_remove(L, 2);
-	luaL_checktype(L, 2, LUA_TFUNCTION);
-	lua_pushthread(thread);
-	lua_xmove(thread, L, 1);
-	lua_call(L, 1, LUA_MULTRET);
+	// thread, ..., function
+	
+	lua_insert(L, 1);
+	// function, thread, ...
+	
+	lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
 }
 
 static int CoYeild_Resume(lua_State *L)
 {
-	int begin_stack_size = lua_gettop(L);
 	enabled = 1;
-	luaL_checktype(L, 1, LUA_TTHREAD);
-	CoYeild_CallLuaYieldFunc(L, lua_tothread(L, 1));
+	CoYeild_CallLuaYieldFunc(L);
 	enabled = 0;
-	return lua_gettop(L) - begin_stack_size;
+	return lua_gettop(L);
 }
 
 static const struct luaL_reg CoYield [] = {
