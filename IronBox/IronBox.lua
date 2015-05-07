@@ -42,13 +42,13 @@ local IronBox__meta = {
 	
 	__index = {
 		resume = function(box, ...)
-			CoYield.resume(box.__co, ...)
+			CoYield.resume(box.co, ...)
 		end,
 	},
 }
 
-local function createIronBoxObject(co)
-	return setmetatable({ __co = co }, IronBox__meta)
+local function createIronBoxObject(co, env)
+	return setmetatable({ co = co, env = env }, IronBox__meta)
 end
 
 function IronBox.create(untrusted, env, errorfunc)
@@ -98,7 +98,7 @@ function IronBox.create(untrusted, env, errorfunc)
 	-- create safe coroutine
 	local co = coroutine.create(safefunc)
 	CoYield.makeCoYield(co, instructionsCount)
-	return createIronBoxObject(co)
+	return createIronBoxObject(co, env)
 end
 
 return IronBox

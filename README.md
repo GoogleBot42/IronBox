@@ -8,10 +8,17 @@ NOTE: Be careful about what functions are passed to the environment of the unsaf
 This is because Lua debug hooks cannot stop C from executing.
 
 ### Compiling
+On Linux:
 ```
 cmake .
 make
+cd IronBox
+luajit test.lua
 ```
+On Windows:
+Open cmake gui and configure and generate a VS project
+Open the project and set to release mode and build
+Run test.lua in luajit.
 
 ### Allowing sandboxed code to be jit compiled
 see here: http://lua-users.org/lists/lua-l/2011-06/msg00513.html
