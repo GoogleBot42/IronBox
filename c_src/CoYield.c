@@ -27,15 +27,12 @@
 #define DEFUALT_INSTRUCTIONS 100000
 #define MINIMUM_INSTRUCTIONS 1000
 
-char enabled = 1;
+int enabled = 0;
 
 static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
 	if (enabled)
-	{
-		enabled = 0;
 		lua_yield(L, 0);
-	}
 }
 
 static int CoYield_MakeCoYield(lua_State *L)
@@ -59,53 +56,56 @@ static int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-static void CoYeild_CallLuaYieldFunc(lua_State *L) //, lua_State* thread)
+static void CoYeild_CallLuaResumeFunc(lua_State *L) //, lua_State* thread)
 {
+	// same as ( LUA_REGISTRYINDEX[CoYield_lib][1] )(...)
 	luaL_checktype(L, 1, LUA_TTHREAD);
-	// thread, ...
-	
-	lua_getglobal(L, "coroutine");
-	// thread, ..., coroutine_t
-	
-	lua_insert(L, 2);
-	// thread, coroutine_t, ...
-	
-	if (!lua_istable(L, 2))
-		luaL_error(L, "Global coroutine is not a table");
-	lua_getfield(L, 2, "resume");
-	if (!lua_isfunction(L, -1))
-		luaL_error(L, "coroutine.resume is not a function");
-	// thread, coroutine_t, ..., function
-	
-	lua_remove(L, 2);
-	// thread, ..., function
-	
+	lua_getfield(L, LUA_REGISTRYINDEX, "CoYield_lib");
+	lua_rawgeti(L, -1, 1);
+	lua_remove(L, -2);
 	lua_insert(L, 1);
-	// function, thread, ...
-	
 	lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
 }
 
 static int CoYeild_Resume(lua_State *L)
 {
-	enabled = 1;
-	CoYeild_CallLuaYieldFunc(L);
-	enabled = 0;
+	++enabled;
+	CoYeild_CallLuaResumeFunc(L);
+	--enabled;
 	return lua_gettop(L);
 }
 
-static const struct luaL_reg CoYield [] = {
+static void CoYeild_SaveGlobalLuaCoResumeFunc(lua_State *L)
+{
+	// same as: LUA_REGISTRYINDEX[CoYield_lib] = { coroutine.resume }
+	
+	// create table in private space
+	lua_createtable(L, 1, 0);
+	// get "coroutine.resume" and save this function to the table at position zero
+	lua_getglobal(L, "coroutine");
+	if (!lua_istable(L, -1))
+		luaL_error(L, "Global coroutine is not a table.");
+	lua_getfield(L, -1, "resume");
+	if (!lua_iscfunction(L, -1))
+		luaL_error(L, "The global \"coroutine.resume\" is not a c function.");
+	lua_remove(L, -2);
+	lua_rawseti(L, -2, 1);
+	// push this table to the private space
+	lua_setfield(L, LUA_REGISTRYINDEX, "CoYield_lib");
+}
+
+static const struct luaL_reg CoYield_lib [] = {
       {"makeCoYield", CoYield_MakeCoYield},
       {"resume", CoYeild_Resume},
       {NULL, NULL}
 };
 
-#ifdef _WIN32
-__declspec(dllexport) int luaopen_CoYield (lua_State *L)
-#else
-int luaopen_CoYield (lua_State *L)
+#ifndef __declspec
+#define __declspec(a)
 #endif
+__declspec(dllexport) int luaopen_CoYield (lua_State *L)
 {
-	luaL_register(L, "\0", CoYield);
+	CoYeild_SaveGlobalLuaCoResumeFunc(L);
+	luaL_register(L, "CoYield", CoYield_lib);
 	return 1;
 }

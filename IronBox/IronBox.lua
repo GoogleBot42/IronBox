@@ -25,7 +25,8 @@ local envGen = require "SandboxEnv"
 
 local IronBox = {}
 
-IronBox.Boxes = setmetatable({}, { __mode = "kv" })
+-- this table is not safe to be exposed to a sandbox
+local IronBoxes = setmetatable({}, { __mode = "kv" })
 
 local function table_combine(t1, t2)
 	for i, v in pairs(t2) do
@@ -49,20 +50,27 @@ local IronBox__meta = {
 	__index = {
 		resume = function(box, ...)
 			if type(box.co) == "thread" then
-				-- pass box for error handler
+				-- also pass box for error handler
 				CoYield.resume(box.co, box, ...)
+				box.timesRun = box.timesRun + 1
 			end
 		end,
 	},
 }
 
-local function createIronBoxObject(co, env)
+local function createIronBoxObject(co, env, errorFunc)
 	if co then
-		local box = { co = co, env = env, id = #IronBox.Boxes }
-		table.insert(IronBox.Boxes, box)
+		local box = {
+			co = co, 
+			env = env,
+			id = #IronBoxes + 1,
+			errorFunc = errorFunc,
+			timesRun = 0,
+		}
+		table.insert(IronBoxes, box)
 		return setmetatable(box, IronBox__meta)
 	else
-		return setmetatable({ co = co, env = env }, IronBox__meta)
+		return setmetatable({ env = env }, IronBox__meta)
 	end
 end
 
@@ -106,7 +114,7 @@ function IronBox.create(untrusted, env, errorfunc)
 	local safefunc = function(box, ...)
 		local ok, result = pcall(untrusted, ...)
 		if not ok then
-			errorfunc(result, box)
+			box.errorFunc(result, box)
 		end
 		return result
 	end
@@ -116,7 +124,7 @@ function IronBox.create(untrusted, env, errorfunc)
 	-- create safe coroutine
 	local co = coroutine.create(safefunc)
 	CoYield.makeCoYield(co, instructionsCount)
-	return createIronBoxObject(co, env)
+	return createIronBoxObject(co, env, errorfunc)
 end
 
 return IronBox
