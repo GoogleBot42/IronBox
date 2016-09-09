@@ -24,7 +24,7 @@
 #include "include/lauxlib.h"
 #include <limits.h>
 
-#define DEFUALT_INSTRUCTIONS 100000
+#define DEFAULT_INSTRUCTIONS 100000
 #define MINIMUM_INSTRUCTIONS 1000
 
 int enabled = 0;
@@ -40,7 +40,7 @@ static int CoYield_MakeCoYield(lua_State *L)
 	luaL_checktype(L, 1, LUA_TTHREAD);
 	lua_State *L1 = lua_tothread(L, 1);
 	
-	int instructions = DEFUALT_INSTRUCTIONS;
+	int instructions = DEFAULT_INSTRUCTIONS;
 	if (lua_gettop(L) >= 2 && !lua_isnil(L, 2))
 	{
 		lua_Number tmp = luaL_checknumber(L, 2);
