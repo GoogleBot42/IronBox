@@ -56,7 +56,7 @@ box1()
 box2()
 -- they are started and resumed correctly without a c boundary errors that would pop up if pure lua was used
 ```
-You can initialize with a sandbox with specific environment.  A defualt safe environment is used if this arguemtn is empty.  Also a custom error function can be specified as well.
+You can initialize with a sandbox with specific environment.  A default safe environment is used if this argument is empty.  Also a custom error function can be specified as well.
 ```lua
 local function error_hand(msg, box) -- msg holds the error box is the ironbox that had the error
 	print("There was an error!")
