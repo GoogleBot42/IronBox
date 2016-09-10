@@ -91,23 +91,38 @@ local IronBox__meta = {
 	end,
 	
 	__index = {
+		-- runs the box until the C code stops it
 		resume = function(box, ...)
-			if type(box.co) == "thread" then
-				-- also pass box for error handler
-				CoYield.resume(box.co, box, ...)
-				box.timesRun = box.timesRun + 1
+			box.timesRun = box.timesRun + 1
+			-- also pass box for error handler
+			return CoYield.resume(box.co, box, ...)
+		end,
+		-- will loop until the box finishes even if that is forever
+		wait = function(box, ...)
+			while true do
+				local t = { box:resume(...) }
+				if t[1] then break end
 			end
+			return select(2, unpack(t)) -- return all return vals and omit the status boolean
+		end,
+		-- resets the state of the coroutine.  (program counter is reset but environment remains the same)
+		reset = function(box, ...)
+			box.timesRun = 0
+			box.co = coroutine.create(box.safeFunc)
+			CoYield.makeCoYield(box.co, box.instructionsCount)
 		end,
 	},
 }
 
-local function createIronBoxObject(co, env, errorFunc)
+local function createIronBoxObject(co, env, errorFunc, safeFunc, instructionsCount)
 	if co then
 		local box = {
 			co = co, 
 			env = env,
 			id = #IronBoxes + 1,
 			errorFunc = errorFunc,
+			safeFunc = safeFunc,
+			instructionsCount = instructionsCount,
 			timesRun = 0,
 		}
 		table.insert(IronBoxes, box)
@@ -168,7 +183,7 @@ function IronBox.create(untrusted, env, errorfunc)
 	-- create safe coroutine
 	local co = coroutine.create(safefunc)
 	CoYield.makeCoYield(co, instructionsCount)
-	return createIronBoxObject(co, env, errorfunc)
+	return createIronBoxObject(co, env, errorfunc, safefunc, instructionsCount)
 end
 
 return IronBox

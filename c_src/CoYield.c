@@ -23,19 +23,17 @@
 #include "include/lua.h"
 #include "include/lauxlib.h"
 #include <limits.h>
+#include <string.h>
 
 #define DEFAULT_INSTRUCTIONS 100000
 #define MINIMUM_INSTRUCTIONS 1000 // having any less than this likely will cause performance issues because of so much switching
 
-// this is a number this respresents the number of coroutines that have been paused
-// this an int instead of a bool so that more than one coroutine may be paused at a time
-int enabled = 0;
+int justYielded = 0;
 
 static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
-	// this function is called more than necessary in some cases TODO: find better solution
-	if (enabled)
-		lua_yield(L, 0);
+	justYielded = 1;
+	lua_yield(L, 0);
 }
 
 static int CoYield_MakeCoYield(lua_State *L)
@@ -61,28 +59,35 @@ static int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-static void CoYeild_CallLuaResumeFunc(lua_State *L)
+static int CoYeild_Resume(lua_State *L)
 {
-	// same as ( LUA_REGISTRYINDEX[CoYield_lib][1] )(...)
+	// same as ( LUA_REGISTRYINDEX["CoYield_lib"][1] )(...)
 	luaL_checktype(L, 1, LUA_TTHREAD);
 	lua_getfield(L, LUA_REGISTRYINDEX, "CoYield_lib");
 	lua_rawgeti(L, -1, 1);
 	lua_remove(L, -2);
 	lua_insert(L, 1);
+	// run the coroutine (a.k.a. where the magic happens)
 	lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
-}
-
-static int CoYeild_Resume(lua_State *L)
-{
-	++enabled;
-	CoYeild_CallLuaResumeFunc(L);
-	--enabled;
+	
+	// now replace the bool status returned by lua's resume with more descript stuff
+	if (justYielded) {
+		justYielded = 0;
+		lua_pushboolean(L, 0); // coroutine is paused
+	} else {
+		lua_pushboolean(L, 1); // coroutine is finished
+		// remove coroutine error message.  it doesn't really matter
+		if (lua_isstring(L, 2) && strcmp(lua_tolstring(L, 2, NULL), "cannot resume dead coroutine") == 0)
+			lua_remove(L, 2);
+	}
+	lua_replace(L, 1); // replace the first arg with the boolean
+	
 	return lua_gettop(L);
 }
 
 static void CoYeild_SaveGlobalLuaCoResumeFunc(lua_State *L)
 {
-	// same as: LUA_REGISTRYINDEX[CoYield_lib] = { coroutine.resume }
+	// same as: LUA_REGISTRYINDEX["CoYield_lib"] = { coroutine.resume }
 	
 	// create table in private space
 	lua_createtable(L, 1, 0);
