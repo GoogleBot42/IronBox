@@ -20,22 +20,25 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
--- load library
 local IronBox = require "IronBox"
 
-local box = IronBox.create(function() 
-    while true do 
-        -- never exits
-    end 
-    print("I don't finish :(")
-end)
+local function error_hand(msg, box) -- "msg" holds the error. "box" is the ironbox that had the error.
+    print("There was an error!")
+end
 
--- run the box
-box() -- box:resume() works too
--- ding! The box has surpassed the executing limit.  Pausing the coroutine
+-- use default environment with custom error handler
+-- error_hand is called: syntax error
+local box1 = IronBox.create("while true do", nil, error_hand)
 
--- continue the box
-box()
--- stops again
+-- empty environment and default error handler (this just prints error to console)
+-- print has not been exposed to this IronBox.  But this box hasn't run yet so no error
+local box2 = IronBox.create(function() print("test") end, {})
 
-print("And it stops!")
+if box1 then -- IronBox.create returns nil if unsuccessful
+	box1()
+	print("box1 creation successful")
+end
+
+box2() -- error msg is sent to default error handler which prints error to console
+
+

@@ -59,19 +59,21 @@ box2()
 You can initialize with a sandbox with specific environment.  A default safe environment is used if this argument is empty.  Also a custom error function can be specified as well.
 ```lua
 local function error_hand(msg, box) -- "msg" holds the error. "box" is the ironbox that had the error.
-	print("There was an error!")
+    print("There was an error!")
 end
 
 -- use default environment with custom error handler
-local box1 = IronBox.create("while true do", nil, error_hand)
 -- error_hand is called: syntax error
+local box1 = IronBox.create("while true do", nil, error_hand)
 
 -- empty environment and default error handler (this just prints error to console)
-local box2 = IronBox.create(function() print("test") end, {})
 -- print has not been exposed to this IronBox.  But this box hasn't run yet so no error
+local box2 = IronBox.create(function() print("test") end, {})
 
-box1() -- does nothing because creation of box was unsucssful
-assert(box1.co == nil) -- if this is true then the box failed to initialize and the error handler was called
+if box1 then -- IronBox.create returns nil if unsuccessful
+	box1()
+	print("box1 creation successful")
+end
 
 box2() -- error msg is sent to default error handler which prints error to console
 ```

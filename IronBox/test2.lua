@@ -20,22 +20,14 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
--- load library
 local IronBox = require "IronBox"
 
-local box = IronBox.create(function() 
-    while true do 
-        -- never exits
-    end 
-    print("I don't finish :(")
-end)
+local box1 = IronBox.create("while true do end print(\"I don't finish :(\")")
+local box2 = IronBox.create("print('I cannot use the \"print\" function')", {}) -- create empty environment (print doesn't exist so an error)
+local box3 = IronBox.create("print('Ahhh now I can print! :)')") -- use the default environment (includes print, pairs, etc. and is missing only a few dangerous functions)
 
--- run the box
-box() -- box:resume() works too
--- ding! The box has surpassed the executing limit.  Pausing the coroutine
+box1() -- or box1:resume() they are the same
+box2()
+box3()
 
--- continue the box
-box()
--- stops again
-
-print("And it stops!")
+print("Exiting lua")
