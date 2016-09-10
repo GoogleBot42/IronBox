@@ -4,7 +4,9 @@ project(CoYield C)
 SET(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/IronBox)
 
 add_library (${PROJECT_NAME} SHARED c_src/CoYield.c)
-target_link_libraries (${PROJECT_NAME} lua51)
+# find luajit library and then lua5.1 if luajit is not found
+find_library(LUA_LIB NAMES luajit-5.1 luajit51 luajit lua51 lua5.1 lua-5.1)
+target_link_libraries (${PROJECT_NAME} ${LUA_LIB})
 set_target_properties (${PROJECT_NAME} PROPERTIES PREFIX "")
 
 if (WIN32)

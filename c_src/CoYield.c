@@ -25,21 +25,26 @@
 #include <limits.h>
 
 #define DEFAULT_INSTRUCTIONS 100000
-#define MINIMUM_INSTRUCTIONS 1000
+#define MINIMUM_INSTRUCTIONS 1000 // having any less than this likely will cause performance issues because of so much switching
 
+// this is a number this respresents the number of coroutines that have been paused
+// this an int instead of a bool so that more than one coroutine may be paused at a time
 int enabled = 0;
 
 static void CoYield_Yield(lua_State *L, lua_Debug *ar)
 {
+	// this function is called more than necessary in some cases TODO: find better solution
 	if (enabled)
 		lua_yield(L, 0);
 }
 
 static int CoYield_MakeCoYield(lua_State *L)
 {
+	// get and  lua thread (first arg)
 	luaL_checktype(L, 1, LUA_TTHREAD);
 	lua_State *L1 = lua_tothread(L, 1);
 	
+	// get number of instructions (second arg)
 	int instructions = DEFAULT_INSTRUCTIONS;
 	if (lua_gettop(L) >= 2 && !lua_isnil(L, 2))
 	{
@@ -56,7 +61,7 @@ static int CoYield_MakeCoYield(lua_State *L)
 	return 0;
 }
 
-static void CoYeild_CallLuaResumeFunc(lua_State *L) //, lua_State* thread)
+static void CoYeild_CallLuaResumeFunc(lua_State *L)
 {
 	// same as ( LUA_REGISTRYINDEX[CoYield_lib][1] )(...)
 	luaL_checktype(L, 1, LUA_TTHREAD);

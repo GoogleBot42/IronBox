@@ -20,8 +20,12 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
--- environment variables that have been commented out are not safe
--- but a few of them could potentially be made safe
+
+
+---------------------------------------------------------------------
+-- environment variables that have been commented out are not safe --
+-- but a few of them could potentially be made safe                --
+---------------------------------------------------------------------
 
 return function() return {
 	assert = assert,
@@ -46,7 +50,7 @@ return function() return {
 	running = coroutine.running,
 	status = coroutine.status,
 	wrap = coroutine.wrap,
-	-- yield = coroutine.yield, -- make sure that no c boundaries are surpassed or lua will terminate
+	-- yield = coroutine.yield, -- make sure that no c boundaries are surpassed or lua will terminate with an error
 	},
 	-- module = module,
 	-- require = module,
@@ -56,7 +60,7 @@ return function() return {
 		char = string.char,
 		-- dump = string.dump,
 
-		-- Determine if these are safe
+		-- TODO: Determine if these are safe and/or write lua implementations
 		-- find = string.find, -- warning: a number of functions like this can still lock up the CPU [6]
 		-- format = string.format,
 		-- gmatch = string.gmatch,

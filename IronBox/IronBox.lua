@@ -70,29 +70,28 @@ local function createIronBoxObject(co, env, errorFunc)
 		table.insert(IronBoxes, box)
 		return setmetatable(box, IronBox__meta)
 	else
-		return setmetatable({ env = env }, IronBox__meta)
+		return setmetatable({ }, IronBox__meta) -- return empty object: failed
 	end
 end
 
 function IronBox.create(untrusted, env, errorfunc)
 	-- type checks
 	assert(type(untrusted) == "string" or type(untrusted) == "function")
-	if type(errorfunc) ~= "function" then
-		errorfunc = default_errorfunc
-		if jit then jit.off(errorfunc,true) end
-	end
+	assert(errorfunc == nil or type(errorfunc) == "function")
+	
+	-- set error function
+	errorfunc = errorfunc or default_errorfunc
+	if jit then jit.off(errorfunc,true) end -- make sure everything is not jit compiled and will respond to yeild
 	
 	-- extract options and create environment
 	local instructionsCount
 	if env then
-		if env._useDefault then
+		if env._combineEnvWithDefault then
 			table_combine(env, envGen())
 		end
 		if type(env._count) == "number" then
 			instructionsCount = env._count
 		end
-		env._noDefault = nil
-		env._count = nil
 	else
 		env = envGen()
 	end
@@ -103,7 +102,7 @@ function IronBox.create(untrusted, env, errorfunc)
 		untrusted, msg = loadstring(untrusted)
 		if untrusted == nil then
 			errorfunc(msg)
-			return createIronBoxObject(nil, env)
+			return nil -- failed to create a box
 		end
 	end
 	
@@ -118,6 +117,8 @@ function IronBox.create(untrusted, env, errorfunc)
 		end
 		return result
 	end
+	
+	-- untrusted code cannot be jit compiled and guarantee that it will yeild
 	if jit then jit.off(untrusted,true) end
 	if jit then jit.off(safefunc,true) end
 	
