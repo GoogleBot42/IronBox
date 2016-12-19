@@ -1,0 +1,3 @@
+Add support for lua 5.2 and 5.3  These versions will be normal and do not require the special c library.  I mostly want to add this just so it can be used on any version of lua.
+
+Add the ability to have nested IronBoxes.  (Not that it is particularly useful but it makes for a lot more fun and a bit more c code.)
